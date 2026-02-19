@@ -23,3 +23,17 @@ def create_user(email: str, password: str, name: str):
         db.add(new_user)
         db.commit()
         return True
+
+    from pydantic import BaseModel, EmailStr
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+Тогда эндпоинт будет:
+
+python
+Копировать код
+@app.post("/register")
+def register(user: UserCreate):
+    create_user(user.email, user.password, user.name)
