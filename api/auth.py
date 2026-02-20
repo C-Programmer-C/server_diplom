@@ -1,15 +1,31 @@
+from pydantic.networks import EmailStr
 from database.auth import create_user
-from main import app
 from fastapi import Response, status
+from pydantic import BaseModel
+from fastapi import APIRouter
 
-@app.post("/register")
-def register(email: str, password: str, name: str):
-    create_user(email, password, name)
+auth_router = APIRouter()
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+@auth_router.post("/register")
+def register(data: RegisterRequest):
+    is_exist = create_user(data.email, data.password, data.name)
+    if not is_exist:
+        return Response(status_code=status.HTTP_409_CONFLICT)
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@app.post("/login")
-def login():
-    return {
-        "app_name": "123"
-    }
+
+@auth_router.post("/login")
+def login(data: LoginRequest):
+    exist_user = 

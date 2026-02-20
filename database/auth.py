@@ -1,39 +1,43 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import settings
-from sqlalchemy.orm import declarative_base
-from passlib.context import CryptContext
 from models.user import User
+import bcrypt
 
 
-Base = declarative_base()
+
 engine = create_engine(settings.DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def verify_password(plain_password: str, hashed: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed.encode("utf-8"),
+    )
+
 
 
 def create_user(email: str, password: str, name: str):
-    hashed_password = pwd_context.hash(password)
+    """Create user in database with check existing user"""
+    hashed_password = hash_password(password)
     with Session(autoflush=False, bind=engine) as db:
-        existing_user = db.query(User).filter(User.email == email).first
-        if (existing_user):
+        existing_user = db.query(User).filter(User.email == email).first()
+        if existing_user:
             return False
         new_user = User(name=name, email=email, hashed_password=hashed_password)
         db.add(new_user)
         db.commit()
         return True
 
-    from pydantic import BaseModel, EmailStr
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
-Тогда эндпоинт будет:
-
-python
-Копировать код
-@app.post("/register")
-def register(user: UserCreate):
-    create_user(user.email, user.password, user.name)
+def find_user(email: str, password: str):
+    with Session(autoflush=False, bind=engine) as db:
+        existing_user = db.query(User).filter(User.email == email, User.password == password).first()
+        if not existing_user:
+            return False
+    return True
