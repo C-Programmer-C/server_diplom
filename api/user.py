@@ -24,3 +24,5 @@ def read_product(product_id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
         )
     return product
+
+    

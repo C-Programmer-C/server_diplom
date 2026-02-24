@@ -3,6 +3,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from models.user import User
 from models.product import Product
+from models.category import Category
 from alembic import context
 from database.base import Base
 from config import settings
