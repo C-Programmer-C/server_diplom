@@ -1,8 +1,9 @@
-from pydantic.networks import EmailStr
-from database.auth import create_user
-from fastapi import Response, status
+from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
-from fastapi import APIRouter
+from pydantic.networks import EmailStr
+
+from database.auth import authenticate_user, create_user
+from utils.auth import create_access_token, create_refresh_token
 
 auth_router = APIRouter()
 
@@ -12,20 +13,31 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
 
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
 
-@auth_router.post("/register")
+@auth_router.post("/register", summary="Create a new user")
 def register(data: RegisterRequest):
     is_exist = create_user(data.email, data.password, data.name)
     if not is_exist:
-        return Response(status_code=status.HTTP_409_CONFLICT)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="The user already exists"
+        )
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-
-@auth_router.post("/login")
+@auth_router.post("/login", summary="Create access and refresh tokens for user")
 def login(data: LoginRequest):
-    exist_user = 
+    user = authenticate_user(data.email, data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
+        )
+    return {
+        "access_token": create_access_token(user.email),
+        "refresh_token": create_refresh_token(user.email),
+    }
+
