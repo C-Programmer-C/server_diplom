@@ -8,4 +8,4 @@ class Category(Base):
     __tablename__ = "categories"
     id = Column("id", Integer, primary_key=True, index=True)
     name = Column("name", String(100), nullable=False, index=True, unique=True)
-    products = relationship("Product", back_populates="category")
+    # products = relationship("Product", back_populates="category")

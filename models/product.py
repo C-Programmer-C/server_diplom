@@ -3,12 +3,22 @@ from sqlalchemy.sql import func
 from database.base import Base
 from sqlalchemy.orm import relationship
 
+
 class Product(Base):
     __tablename__ = "products"
-    id = Column("id", Integer, primary_key=True, index=True)
-    name = Column("name", String(100), nullable=False, index=True, unique=True)
-    description = Column("description", Text, nullable=False)
-    price = Column("price", Numeric(10, 2), nullable=False, index=True)
-    stock = Column("stock", Integer, nullable=False)
-    category_id = Column("category_id", Integer, ForeignKey("categories.id"), nullable=False)
-    category = relationship("Category", back_populates="products")
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String(100), nullable=False, index=True, unique=True)
+    description = Column(Text, nullable=False)
+
+    price = Column(Numeric(10, 2), nullable=False, index=True)
+    discount = Column(Numeric(5, 2), nullable=False, default=0)
+
+    image_url = Column(String(255), nullable=False)
+
+    stock = Column(Integer, nullable=False)
+
+    count_feedbacks = Column(Integer, nullable=False, default=0)
+    evaluation = Column(Numeric(2, 1), nullable=False, default=0)
+
